@@ -1,0 +1,47 @@
+<h1>Profil: {{ user[0] }}</h1>
+<p>Punkty: {{ user[1] }}</p>
+
+<h2>Twoje trasy</h2>
+<ul>
+{% for trail in trails %}
+  <li>{{ trail[2] }} - {{ trail[3] }} ({{ trail[4] }}, {{ trail[5] }})</li>
+{% endfor %}
+</ul>
+
+<h2>Dodaj trasę</h2>
+<form method="POST" action="/add_trail">
+  <input type="text" name="name" placeholder="Nazwa trasy" required>
+  <input type="text" name="description" placeholder="Opis" required>
+  <input type="number" step="0.000001" name="latitude" placeholder="Szerokość geograficzna" required>
+  <input type="number" step="0.000001" name="longitude" placeholder="Długość geograficzna" required>
+  <button type="submit">Dodaj trasę (+10 pkt)</button>
+</form>
+
+<h2>Mapa</h2>
+<div id="map" style="height: 500px;"></div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+var map = L.map('map').setView([51.9355, 15.5062], 13); // domyślna lokalizacja
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© OpenStreetMap contributors'
+}).addTo(map);
+
+// dodaj markery tras użytkownika
+{% for trail in trails %}
+L.marker([{{ trail[4] }}, {{ trail[5] }}]).addTo(map)
+  .bindPopup('<b>{{ trail[2] }}</b><br>{{ trail[3] }}');
+{% endfor %}
+
+// geolokalizacja użytkownika
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(function(position){
+    L.marker([position.coords.latitude, position.coords.longitude], {icon:L.icon({iconUrl:'/static/star.png',iconSize:[25,25]})})
+      .addTo(map)
+      .bindPopup("Twoja lokalizacja").openPopup();
+  });
+}
+</script>
+
+<a href="/logout">Wyloguj</a>
